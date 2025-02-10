@@ -1,31 +1,25 @@
-from flask import Blueprint, request, jsonify
-from hw66.database import db
-from hw66.app import Contract
+from flask import Blueprint, render_template, redirect, url_for, request
+from flask_login import login_required, current_user
+from hw66.models import Contract, Item
+from database import db
 
 contract_bp = Blueprint('contract', __name__)
 
-@contract_bp.route('/contracts', methods=['GET', 'POST'])
+@contract_bp.route('/contracts')
+@login_required
 def contracts():
-    if request.method == 'GET':
-        contracts = Contract.query.all()
-        return jsonify([{'id': contract.id, 'item_id': contract.item_id, 'user_id': contract.user_id} for contract in contracts]), 200
-    elif request.method == 'POST':
-        item_id = request.form['item_id']
-        user_id = request.form['user_id']
-        new_contract = Contract(item_id=item_id, user_id=user_id)
+    contracts = Contract.query.filter_by(leaser_id=current_user.id).all()
+    return render_template('contracts.html', contracts=contracts)
+
+@contract_bp.route('/contract_item/<int:item_id>', methods=['GET', 'POST'])
+@login_required
+def contract_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    if request.method == 'POST':
+        terms = request.form['terms']
+        new_contract = Contract(item_id=item.id, leaser_id=current_user.id, terms=terms)
+        item.status = 'contracted'
         db.session.add(new_contract)
         db.session.commit()
-        return jsonify({'message': 'Contract added successfully'}), 201
-
-@contract_bp.route('/contracts/<int:contract_id>', methods=['GET', 'PATCH', 'PUT'])
-def contract_detail(contract_id):
-    contract = Contract.query.get(contract_id)
-    if not contract:
-        return jsonify({'message': 'Contract not found'}), 404
-    if request.method == 'GET':
-        return jsonify({'id': contract.id, 'item_id': contract.item_id, 'user_id': contract.user_id}), 200
-    elif request.method in ['PATCH', 'PUT']:
-        contract.item_id = request.form.get('item_id', contract.item_id)
-        contract.user_id = request.form.get('user_id', contract.user_id)
-        db.session.commit()
-        return jsonify({'message': 'Contract updated successfully'}), 200
+        return redirect(url_for('contract.contracts'))
+    return render_template('contract_item.html', item=item)

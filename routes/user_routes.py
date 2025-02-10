@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session, jsonify
-from hw66.database import db
-from hw66.app import User, Favourite, SearchHistory
+from hw66 import db
+from hw66 import User, Favourite, SearchHistory
 
 user_bp = Blueprint('user', __name__)
 

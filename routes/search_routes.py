@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from hw66.database import db
-from hw66.app import Item, SearchHistory
-from hw66.routes.user_routes import get_user_from_session
+from hw66 import db
+from hw66 import Item, SearchHistory
+from hw66 import get_user_from_session
 
 search_bp = Blueprint('search', __name__)
 

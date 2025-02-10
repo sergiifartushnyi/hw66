@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from hw66.app import Leaser
+from hw66 import Leaser
 
 leaser_bp = Blueprint('leaser', __name__)
 
